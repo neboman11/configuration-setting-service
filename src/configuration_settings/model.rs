@@ -74,6 +74,20 @@ impl ConfigurationSettings {
         Ok(configuration_setting)
     }
 
+    pub fn update_by_secion_and_name(
+        section: String,
+        name: String,
+        configuration_setting: ConfigurationSetting,
+    ) -> Result<Self, CustomError> {
+        let mut conn = database::connection()?;
+        let configuration_setting = diesel::update(configuration_settings::table)
+            .filter(configuration_settings::section.eq(section))
+            .filter(configuration_settings::name.eq(name))
+            .set(configuration_setting)
+            .get_result(&mut conn)?;
+        Ok(configuration_setting)
+    }
+
     pub fn delete(id: i32) -> Result<usize, CustomError> {
         let mut conn = database::connection()?;
         let res =

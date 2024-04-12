@@ -53,6 +53,20 @@ async fn update(
     Ok(HttpResponse::Ok().json(configuration_setting))
 }
 
+#[put("/configuration_setting/{section}/{name}")]
+async fn update_by_secion_and_name(
+    params: web::Path<(String, String)>,
+    configuration_setting: web::Json<ConfigurationSetting>,
+) -> Result<HttpResponse, CustomError> {
+    let (section, name) = params.into_inner();
+    let configuration_setting = ConfigurationSettings::update_by_secion_and_name(
+        section,
+        name,
+        configuration_setting.into_inner(),
+    )?;
+    Ok(HttpResponse::Ok().json(configuration_setting))
+}
+
 #[delete("/configuration_setting/{id}")]
 async fn delete(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
     let deleted_configuration_setting = ConfigurationSettings::delete(id.into_inner())?;
