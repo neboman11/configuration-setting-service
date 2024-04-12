@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, AsChangeset, Insertable)]
-#[table_name = "configuration_settings"]
+#[diesel(table_name = configuration_settings)]
 pub struct ConfigurationSetting {
     pub section: String,
     pub name: String,
