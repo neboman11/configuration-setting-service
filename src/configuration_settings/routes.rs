@@ -7,7 +7,7 @@ use crate::error_handler::CustomError;
 
 #[utoipa::path(responses((status = OK, body = Vec<ConfigurationSetting>)))]
 #[get("/configuration_settings")]
-async fn find_all() -> Result<HttpResponse, CustomError> {
+pub(crate) async fn find_all() -> Result<HttpResponse, CustomError> {
     let configuration_settings = web::block(|| ConfigurationSettings::find_all())
         .await
         .unwrap();
@@ -16,7 +16,7 @@ async fn find_all() -> Result<HttpResponse, CustomError> {
 
 #[utoipa::path(responses((status = OK, body = Vec<ConfigurationSetting>)))]
 #[get("/configuration_settings/{section}")]
-async fn get_section(section: web::Path<String>) -> Result<HttpResponse, CustomError> {
+pub(crate) async fn get_section(section: web::Path<String>) -> Result<HttpResponse, CustomError> {
     let configuration_settings =
         web::block(|| ConfigurationSettings::get_section(section.into_inner()))
             .await
@@ -26,14 +26,14 @@ async fn get_section(section: web::Path<String>) -> Result<HttpResponse, CustomE
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[get("/configuration_setting/{id}")]
-async fn find_by_id(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
+pub(crate) async fn find_by_id(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
     let configuration_setting = ConfigurationSettings::find(id.into_inner())?;
     Ok(HttpResponse::Ok().json(configuration_setting))
 }
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[get("/configuration_setting/{section}/{name}")]
-async fn find_by_section_and_name(
+pub(crate) async fn find_by_section_and_name(
     params: web::Path<(String, String)>,
 ) -> Result<HttpResponse, CustomError> {
     let (section, name) = params.into_inner();
@@ -43,7 +43,7 @@ async fn find_by_section_and_name(
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[post("/configuration_setting")]
-async fn create(
+pub(crate) async fn create(
     configuration_setting: web::Json<ConfigurationSetting>,
 ) -> Result<HttpResponse, CustomError> {
     let configuration_setting = ConfigurationSettings::create(configuration_setting.into_inner())?;
@@ -52,7 +52,7 @@ async fn create(
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[put("/configuration_setting/{id}")]
-async fn update(
+pub(crate) async fn update(
     id: web::Path<i32>,
     configuration_setting: web::Json<ConfigurationSetting>,
 ) -> Result<HttpResponse, CustomError> {
@@ -63,7 +63,7 @@ async fn update(
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[put("/configuration_setting/{section}/{name}")]
-async fn update_by_secion_and_name(
+pub(crate) async fn update_by_secion_and_name(
     params: web::Path<(String, String)>,
     configuration_setting: web::Json<ConfigurationSetting>,
 ) -> Result<HttpResponse, CustomError> {
@@ -78,7 +78,7 @@ async fn update_by_secion_and_name(
 
 #[utoipa::path(responses((status = OK)))]
 #[delete("/configuration_setting/{id}")]
-async fn delete(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
+pub(crate) async fn delete(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
     let deleted_configuration_setting = ConfigurationSettings::delete(id.into_inner())?;
     Ok(HttpResponse::Ok().json(json!({ "deleted": deleted_configuration_setting })))
 }

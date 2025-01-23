@@ -15,7 +15,18 @@ mod error_handler;
 mod schema;
 
 #[derive(OpenApi)]
-#[openapi(info(description = "My Api description"))]
+#[openapi(
+    info(description = "My Api description"),
+    paths(
+        configuration_settings::routes::find_all,
+        configuration_settings::routes::get_section,
+        configuration_settings::routes::find_by_id,
+        configuration_settings::routes::find_by_section_and_name,
+        configuration_settings::routes::create,
+        configuration_settings::routes::update,
+        configuration_settings::routes::delete
+    )
+)]
 struct ApiDoc;
 
 #[actix_web::main]
