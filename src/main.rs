@@ -5,18 +5,35 @@ extern crate diesel_migrations;
 use actix_web::{App, HttpServer};
 use dotenvy::dotenv;
 use std::env;
+use utoipa::OpenApi;
+use utoipa_actix_web::AppExt;
+use utoipa_swagger_ui::SwaggerUi;
 
 mod configuration_settings;
 mod database;
 mod error_handler;
 mod schema;
 
-#[actix_rt::main]
+#[derive(OpenApi)]
+#[openapi(info(description = "My Api description"))]
+struct ApiDoc;
+
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     database::init();
 
-    let mut server = HttpServer::new(|| App::new().configure(configuration_settings::init_routes));
+    let mut server = HttpServer::new(|| {
+        let (server, mut _api) = App::new()
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}")
+                    .url("/api-docs/openapi.json", ApiDoc::openapi()),
+            )
+            .into_utoipa_app()
+            .configure(configuration_settings::init_routes)
+            .split_for_parts();
+        server
+    });
 
     let host = env::var("HOST").expect("Please set host in .env");
     let port = env::var("PORT").expect("Please set port in .env");

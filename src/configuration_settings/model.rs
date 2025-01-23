@@ -3,8 +3,9 @@ use crate::error_handler::CustomError;
 use crate::schema::configuration_settings;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, AsChangeset, Insertable)]
+#[derive(Serialize, Deserialize, AsChangeset, Insertable, ToSchema)]
 #[diesel(table_name = configuration_settings)]
 pub struct ConfigurationSetting {
     pub section: String,
