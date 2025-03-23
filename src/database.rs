@@ -5,6 +5,7 @@ use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use lazy_static::lazy_static;
 use r2d2;
 use std::{env, error::Error};
+use url::form_urlencoded;
 
 type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 pub type DbConnection = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
@@ -22,7 +23,11 @@ lazy_static! {
             .unwrap();
         let db_url = format!(
             "postgres://{}:{}@{}:{}/{}",
-            db_user, db_password, db_host, db_port, db_database
+            db_user,
+            form_urlencoded::byte_serialize(db_password.as_bytes()).collect::<String>(),
+            db_host,
+            db_port,
+            db_database
         );
         let manager = ConnectionManager::<PgConnection>::new(db_url);
         Pool::new(manager).expect("Failed to create db pool")
