@@ -10,18 +10,17 @@ use crate::error_handler::CustomError;
 pub(crate) async fn find_all() -> Result<HttpResponse, CustomError> {
     let configuration_settings = web::block(|| ConfigurationSettings::find_all())
         .await
-        .unwrap();
-    Ok(HttpResponse::Ok().json(configuration_settings.unwrap()))
+        .map_err(|e| CustomError::new(500, e.to_string()))??;
+    Ok(HttpResponse::Ok().json(configuration_settings))
 }
 
 #[utoipa::path(responses((status = OK, body = Vec<ConfigurationSetting>)))]
 #[get("/configuration_settings/{section}")]
 pub(crate) async fn get_section(section: web::Path<String>) -> Result<HttpResponse, CustomError> {
-    let configuration_settings =
-        web::block(|| ConfigurationSettings::get_section(section.into_inner()))
-            .await
-            .unwrap();
-    Ok(HttpResponse::Ok().json(configuration_settings.unwrap()))
+    let configuration_settings = web::block(|| ConfigurationSettings::get_section(section.into_inner()))
+        .await
+        .map_err(|e| CustomError::new(500, e.to_string()))??;
+    Ok(HttpResponse::Ok().json(configuration_settings))
 }
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
@@ -63,12 +62,12 @@ pub(crate) async fn update(
 
 #[utoipa::path(responses((status = OK, body = ConfigurationSetting)))]
 #[put("/configuration_setting/{section}/{name}")]
-pub(crate) async fn update_by_secion_and_name(
+pub(crate) async fn update_by_section_and_name(
     params: web::Path<(String, String)>,
     configuration_setting: web::Json<ConfigurationSetting>,
 ) -> Result<HttpResponse, CustomError> {
     let (section, name) = params.into_inner();
-    let configuration_setting = ConfigurationSettings::update_by_secion_and_name(
+    let configuration_setting = ConfigurationSettings::update_by_section_and_name(
         section,
         name,
         configuration_setting.into_inner(),
@@ -90,5 +89,6 @@ pub fn init_routes(config: &mut ServiceConfig) {
     config.service(find_by_section_and_name);
     config.service(create);
     config.service(update);
+    config.service(update_by_section_and_name);
     config.service(delete);
 }

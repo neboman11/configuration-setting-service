@@ -13,7 +13,9 @@ pub struct ConfigurationSetting {
     pub value: String,
 }
 
-#[derive(Serialize, Deserialize, Queryable)]
+#[derive(Serialize, Deserialize, Queryable, Selectable)]
+#[diesel(table_name = configuration_settings)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ConfigurationSettings {
     pub id: i32,
     pub section: String,
@@ -24,8 +26,9 @@ pub struct ConfigurationSettings {
 impl ConfigurationSettings {
     pub fn find_all() -> Result<Vec<Self>, CustomError> {
         let mut conn = database::connection()?;
-        let configuration_settings =
-            configuration_settings::table.load::<ConfigurationSettings>(&mut conn)?;
+        let configuration_settings = configuration_settings::table
+            .select(ConfigurationSettings::as_select())
+            .load(&mut conn)?;
         Ok(configuration_settings)
     }
 
@@ -33,7 +36,8 @@ impl ConfigurationSettings {
         let mut conn = database::connection()?;
         let results = configuration_settings::table
             .filter(configuration_settings::section.eq(section))
-            .load::<ConfigurationSettings>(&mut conn)?;
+            .select(ConfigurationSettings::as_select())
+            .load(&mut conn)?;
         Ok(results)
     }
 
@@ -41,6 +45,7 @@ impl ConfigurationSettings {
         let mut conn = database::connection()?;
         let configuration_setting = configuration_settings::table
             .filter(configuration_settings::id.eq(id))
+            .select(ConfigurationSettings::as_select())
             .first(&mut conn)?;
         Ok(configuration_setting)
     }
@@ -50,32 +55,31 @@ impl ConfigurationSettings {
         let configuration_setting = configuration_settings::table
             .filter(configuration_settings::section.eq(section))
             .filter(configuration_settings::name.eq(name))
+            .select(ConfigurationSettings::as_select())
             .first(&mut conn)?;
         Ok(configuration_setting)
     }
 
     pub fn create(configuration_setting: ConfigurationSetting) -> Result<Self, CustomError> {
         let mut conn = database::connection()?;
-        let configuration_setting = ConfigurationSetting::from(configuration_setting);
         let configuration_setting = diesel::insert_into(configuration_settings::table)
             .values(configuration_setting)
+            .returning(ConfigurationSettings::as_returning())
             .get_result(&mut conn)?;
         Ok(configuration_setting)
     }
 
-    pub fn update(
-        id: i32,
-        configuration_setting: ConfigurationSetting,
-    ) -> Result<Self, CustomError> {
+    pub fn update(id: i32, configuration_setting: ConfigurationSetting) -> Result<Self, CustomError> {
         let mut conn = database::connection()?;
         let configuration_setting = diesel::update(configuration_settings::table)
             .filter(configuration_settings::id.eq(id))
             .set(configuration_setting)
+            .returning(ConfigurationSettings::as_returning())
             .get_result(&mut conn)?;
         Ok(configuration_setting)
     }
 
-    pub fn update_by_secion_and_name(
+    pub fn update_by_section_and_name(
         section: String,
         name: String,
         configuration_setting: ConfigurationSetting,
@@ -85,25 +89,17 @@ impl ConfigurationSettings {
             .filter(configuration_settings::section.eq(section))
             .filter(configuration_settings::name.eq(name))
             .set(configuration_setting)
+            .returning(ConfigurationSettings::as_returning())
             .get_result(&mut conn)?;
         Ok(configuration_setting)
     }
 
     pub fn delete(id: i32) -> Result<usize, CustomError> {
         let mut conn = database::connection()?;
-        let res =
-            diesel::delete(configuration_settings::table.filter(configuration_settings::id.eq(id)))
-                .execute(&mut conn)?;
+        let res = diesel::delete(
+            configuration_settings::table.filter(configuration_settings::id.eq(id)),
+        )
+        .execute(&mut conn)?;
         Ok(res)
-    }
-}
-
-impl ConfigurationSetting {
-    fn from(configuration_setting: ConfigurationSetting) -> ConfigurationSetting {
-        ConfigurationSetting {
-            section: configuration_setting.section,
-            name: configuration_setting.name,
-            value: configuration_setting.value,
-        }
     }
 }

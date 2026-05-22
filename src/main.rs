@@ -1,7 +1,3 @@
-extern crate diesel;
-#[macro_use]
-extern crate diesel_migrations;
-
 use actix_web::{App, HttpServer};
 use dotenvy::dotenv;
 use std::env;
@@ -13,6 +9,7 @@ mod configuration_settings;
 mod database;
 mod error_handler;
 mod schema;
+mod ui;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -36,6 +33,7 @@ async fn main() -> std::io::Result<()> {
 
     let mut server = HttpServer::new(|| {
         let (server, mut _api) = App::new()
+            .service(ui::index)
             .service(
                 SwaggerUi::new("/swagger-ui/{_:.*}")
                     .url("/api-docs/openapi.json", ApiDoc::openapi()),

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --border: #e1e4e8;
+      --primary: #0969da;
+      --primary-hover: #0550ae;
+      --danger: #d1242f;
+      --danger-hover: #a40e26;
+      --text: #1f2328;
+      --muted: #656d76;
+      --radius: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .subtitle { color: var(--muted); font-size: 13px; }
+    header .spacer { flex: 1; }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar select, .toolbar input {
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+
+    .toolbar select:focus, .toolbar input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(9,105,218,.1);
+    }
+
+    .toolbar input { width: 220px; }
+    .toolbar .spacer { flex: 1; }
+
+    button {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s, border-color .15s;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--bg); }
+
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: var(--danger-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      height: 26px;
+      padding: 0 8px;
+      font-size: 12px;
+    }
+    .btn-ghost:hover { color: var(--text); background: var(--bg); }
+    .btn-ghost.danger:hover { color: var(--danger); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f6f8fa; }
+
+    td {
+      padding: 10px 14px;
+      vertical-align: middle;
+    }
+
+    td.id { color: var(--muted); font-size: 12px; width: 50px; }
+    td.section { font-weight: 500; }
+    td.value { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    td.actions { text-align: right; white-space: nowrap; width: 100px; }
+
+    .empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty p { margin-top: 8px; font-size: 13px; }
+
+    /* Modal */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.2);
+      width: 440px;
+      max-width: calc(100vw - 32px);
+      padding: 24px;
+    }
+
+    .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .field textarea {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(9,105,218,.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    /* Toast */
+    #toasts {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 200;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      animation: slide-in .2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .toast.success { background: #1a7f37; }
+    .toast.error   { background: var(--danger); }
+
+    @keyframes slide-in {
+      from { transform: translateX(20px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    .section-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ddf4ff;
+      color: #0969da;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Configuration Settings</h1>
+  <span class="subtitle">Manage application configuration</span>
+  <div class="spacer"></div>
+  <a href="/swagger-ui/" target="_blank" style="text-decoration:none;">
+    <button class="btn-secondary">API Docs</button>
+  </a>
+</header>
+
+<div class="main">
+  <div class="toolbar">
+    <select id="section-filter">
+      <option value="">All sections</option>
+    </select>
+    <input id="search" type="search" placeholder="Search name or value…" />
+    <div class="spacer"></div>
+    <button class="btn-secondary" onclick="load()">&#8635; Refresh</button>
+    <button class="btn-primary" onclick="openCreate()">+ New setting</button>
+  </div>
+
+  <div class="card">
+    <table id="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Section</th>
+          <th>Name</th>
+          <th>Value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create / Edit modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="modal-title">New setting</h2>
+    <div class="field">
+      <label for="f-section">Section</label>
+      <input id="f-section" type="text" placeholder="e.g. database" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="f-name">Name</label>
+      <input id="f-name" type="text" placeholder="e.g. timeout" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="f-value">Value</label>
+      <textarea id="f-value" placeholder="e.g. 30"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-submit" onclick="submit()">Create</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+  let allSettings = [];
+  let editingId = null;
+
+  async function load() {
+    try {
+      const res = await fetch('/configuration_settings');
+      if (!res.ok) throw new Error(await res.text());
+      allSettings = await res.json();
+      populateSectionFilter();
+      render();
+    } catch (e) {
+      toast('Failed to load settings: ' + e.message, 'error');
+    }
+  }
+
+  function populateSectionFilter() {
+    const sel = document.getElementById('section-filter');
+    const current = sel.value;
+    const sections = [...new Set(allSettings.map(s => s.section))].sort();
+    sel.innerHTML = '<option value="">All sections</option>' +
+      sections.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    if (sections.includes(current)) sel.value = current;
+  }
+
+  function render() {
+    const section = document.getElementById('section-filter').value;
+    const search = document.getElementById('search').value.toLowerCase();
+
+    const rows = allSettings.filter(s =>
+      (!section || s.section === section) &&
+      (!search || s.name.toLowerCase().includes(search) || s.value.toLowerCase().includes(search))
+    );
+
+    const tbody = document.getElementById('tbody');
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty">
+        <strong>No settings found</strong>
+        <p>${allSettings.length === 0 ? 'Create your first setting to get started.' : 'Try clearing your filters.'}</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(s => `
+      <tr>
+        <td class="id">${s.id}</td>
+        <td class="section"><span class="section-badge">${esc(s.section)}</span></td>
+        <td>${esc(s.name)}</td>
+        <td class="value" title="${esc(s.value)}">${esc(s.value)}</td>
+        <td class="actions">
+          <button class="btn-ghost" onclick="openEdit(${s.id})">Edit</button>
+          <button class="btn-ghost danger" onclick="confirmDelete(${s.id}, '${esc(s.section)}', '${esc(s.name)}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openCreate() {
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'New setting';
+    document.getElementById('modal-submit').textContent = 'Create';
+    document.getElementById('f-section').value = document.getElementById('section-filter').value;
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-value').value = '';
+    document.getElementById('f-section').disabled = false;
+    document.getElementById('f-name').disabled = false;
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('f-section').focus();
+  }
+
+  function openEdit(id) {
+    const s = allSettings.find(x => x.id === id);
+    if (!s) return;
+    editingId = id;
+    document.getElementById('modal-title').textContent = 'Edit setting';
+    document.getElementById('modal-submit').textContent = 'Save';
+    document.getElementById('f-section').value = s.section;
+    document.getElementById('f-name').value = s.name;
+    document.getElementById('f-value').value = s.value;
+    document.getElementById('f-section').disabled = true;
+    document.getElementById('f-name').disabled = true;
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('f-value').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  async function submit() {
+    const section = document.getElementById('f-section').value.trim();
+    const name    = document.getElementById('f-name').value.trim();
+    const value   = document.getElementById('f-value').value;
+
+    if (!section || !name) {
+      toast('Section and name are required.', 'error');
+      return;
+    }
+
+    const body = JSON.stringify({ section, name, value });
+    const btn = document.getElementById('modal-submit');
+    btn.disabled = true;
+
+    try {
+      let res;
+      if (editingId !== null) {
+        res = await fetch(`/configuration_setting/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+      } else {
+        res = await fetch('/configuration_setting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(err.message || res.statusText);
+      }
+
+      closeModal();
+      toast(editingId !== null ? 'Setting updated.' : 'Setting created.', 'success');
+      await load();
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function confirmDelete(id, section, name) {
+    if (!confirm(`Delete "${section} / ${name}"?`)) return;
+    try {
+      const res = await fetch(`/configuration_setting/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(err.message || res.statusText);
+      }
+      toast('Setting deleted.', 'success');
+      await load();
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    }
+  }
+
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  document.getElementById('section-filter').addEventListener('change', render);
+  document.getElementById('search').addEventListener('input', render);
+
+  document.getElementById('overlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if ((e.key === 'Enter') && document.getElementById('overlay').classList.contains('open')) {
+      if (document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        submit();
+      }
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>
