@@ -4,6 +4,7 @@ FROM rust:1.95.0
 # 2. Copy the files in your machine to the Docker image
 WORKDIR /app
 COPY src ./src
+COPY static ./static
 COPY migrations ./migrations
 COPY Cargo.toml ./
 COPY Cargo.lock ./
